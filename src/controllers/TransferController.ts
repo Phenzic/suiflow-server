@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express';
-import { executeTransfer } from '../services/suiService';
+import { executeTransfer, getTransactionByDigest, summarizeTransfer } from '../services/suiService';
 
 function parseAmountToBigInt(input: unknown): bigint | null {
   if (typeof input === 'number' && Number.isFinite(input) && input >= 0) {
@@ -42,6 +42,24 @@ export class TransferController {
         suiCoinObjectId: typeof suiCoinObjectId === 'string' ? suiCoinObjectId : undefined,
       });
       res.json({ ok: true, submission });
+    } catch (err) {
+      res.status(400).json({ ok: false, error: (err as Error).message });
+    }
+  }
+}
+
+export class TransferQueryController {
+  public static async getTreansfer(req: Request, res: Response): Promise<void> {
+    const { digest, transactionDigest } = req.body ?? {};
+    const value = (typeof digest === 'string' ? digest : (typeof transactionDigest === 'string' ? transactionDigest : ''));
+    if (!value) {
+      res.status(400).json({ error: 'digest is required' });
+      return;
+    }
+    try {
+      const full = await getTransactionByDigest(value);
+      const summary = summarizeTransfer(full);
+      res.json({ ok: true, summary });
     } catch (err) {
       res.status(400).json({ ok: false, error: (err as Error).message });
     }

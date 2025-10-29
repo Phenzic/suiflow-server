@@ -85,4 +85,57 @@ export async function executeTransfer(params: SimulateTransferParams) {
   return result;
 }
 
+export async function getTransactionByDigest(digest: string) {
+  const client = createSuiClient();
+  const result = await client.getTransactionBlock({
+    digest,
+    options: {
+      showInput: true,
+      showEffects: true,
+      showEvents: true,
+      showObjectChanges: true,
+      showBalanceChanges: true,
+    },
+  });
+  return result;
+}
+
+export type TransferSummary = {
+  digest: string;
+  status: 'success' | 'failure';
+  sender: string | null;
+  transfers: Array<{ recipient: string; amount: string; coinType: string }>; // amount as string (MIST)
+  gasUsed?: {
+    computationCost?: string;
+    storageCost?: string;
+    storageRebate?: string;
+    nonRefundableStorageFee?: string;
+  };
+};
+
+export function summarizeTransfer(tx: any): TransferSummary {
+  const digest: string = tx.digest ?? '';
+  const status: 'success' | 'failure' = tx?.effects?.status?.status === 'success' ? 'success' : 'failure';
+  const sender: string | null = tx?.transaction?.data?.sender ?? tx?.input?.sender ?? null;
+
+  const transfers: Array<{ recipient: string; amount: string; coinType: string }> = [];
+  const changes: any[] = Array.isArray(tx?.balanceChanges) ? tx.balanceChanges : [];
+  for (const ch of changes) {
+    const ownerAddr = ch?.owner?.AddressOwner;
+    const amountStr = ch?.amount;
+    const coinType = ch?.coinType ?? '0x2::sui::SUI';
+    if (ownerAddr && amountStr && typeof amountStr === 'string') {
+      try {
+        const amt = BigInt(amountStr);
+        if (amt > 0n) {
+          transfers.push({ recipient: ownerAddr, amount: amountStr, coinType });
+        }
+      } catch {}
+    }
+  }
+
+  const gasUsed = tx?.effects?.gasUsed;
+  return { digest, status, sender, transfers, gasUsed };
+}
+
 

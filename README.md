@@ -74,6 +74,13 @@ SUI_MNEMONIC="word1 word2 ..."
   - Returns: on-chain submission result from Sui testnet (signed and executed).
 
 
+- POST `/get-treansfer`
+  - Body JSON:
+    - `digest` (string) or `transactionDigest` (string)
+  - Returns JSON summary with:
+    - `sender`, `transfers` (array of `{ recipient, amount, coinType }`), `status`, `digest`, `gasUsed`
+
+
 
 - Simulate Transfer Endpoint
 
