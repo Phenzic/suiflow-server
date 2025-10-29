@@ -105,6 +105,7 @@ export type FrontendTxSummary = {
   status: 'success' | 'failure';
   executedEpoch: string | undefined;
   summary: string | null;
+  explainer: string | null;
   gasUsed: {
     computationCost: string;
     storageCost: string;
@@ -231,23 +232,7 @@ export function summarizeTransfer(tx: any): FrontendTxSummary {
     ? `${shortAddress(sender)} transferred ${amountSui} SUI to ${shortAddress(recipients[0])}`
     : null;
 
-  // Gas used and total
-  const gu = tx?.effects?.gasUsed ?? {};
-  const computationCost = typeof gu?.computationCost === 'string' ? gu.computationCost : '0';
-  const storageCost = typeof gu?.storageCost === 'string' ? gu.storageCost : '0';
-  const storageRebate = typeof gu?.storageRebate === 'string' ? gu.storageRebate : '0';
-  const nonRefundableStorageFee = typeof gu?.nonRefundableStorageFee === 'string' ? gu.nonRefundableStorageFee : '0';
-  const totalGasUsedBi = bigIntSum([computationCost, storageCost, nonRefundableStorageFee]) - BigInt(storageRebate);
-
-  const gasUsed = {
-    computationCost: formatWithCommas(computationCost),
-    storageCost: formatWithCommas(storageCost),
-    storageRebate: formatWithCommas(storageRebate),
-    nonRefundableStorageFee: formatWithCommas(nonRefundableStorageFee),
-    totalGasUsed: formatWithCommas(totalGasUsedBi.toString()),
-  };
-
-  // Object changes
+  // Object changes (declared here so they are available for explainer below)
   const objectChangesArr: any[] = Array.isArray(tx?.objectChanges) ? tx.objectChanges : [];
   const created = objectChangesArr
     .filter((o) => o?.type === 'created')
@@ -263,6 +248,59 @@ export function summarizeTransfer(tx: any): FrontendTxSummary {
       type: o?.objectType,
       owner: o?.owner?.AddressOwner ?? null,
     }));
+
+  // Explainer (static template for now)
+  function coinTypeSymbol(coinTypeRaw?: string): string {
+    if (!coinTypeRaw) return 'SUI';
+    if (coinTypeRaw.includes('::sui::SUI')) return 'SUI';
+    const m = /Coin<([^>]+)>/.exec(coinTypeRaw);
+    const inner = m ? m[1] : coinTypeRaw;
+    const parts = inner.split('::');
+    return parts[parts.length - 1] || inner;
+  }
+
+  let explainer: string | null = null;
+  const firstPositive = balanceChangesArr.find((ch) => {
+    try { return BigInt(ch?.amount ?? '0') > 0n; } catch { return false; }
+  });
+  const anyNonCoinObject = objectChangesArr?.some?.((o) => typeof o?.objectType === 'string' && !o.objectType.includes('::coin::Coin<'));
+  if (anyNonCoinObject) {
+    // NFT-like transfer template
+    const target = created[0] || mutated[0];
+    const nftType = target?.type || 'Object';
+    const recv = target?.owner || recipients[0] || null;
+    explainer = sender && recv
+      ? `${shortAddress(sender)} transferred NFT (${nftType}) to ${shortAddress(recv)}`
+      : null;
+  } else if (firstPositive) {
+    const sym = coinTypeSymbol(firstPositive?.coinType);
+    const amtRaw = typeof firstPositive?.amount === 'string' ? firstPositive.amount.replace(/^\+/, '') : '0';
+    let amtPretty = formatWithCommas(amtRaw);
+    if (sym === 'SUI') {
+      try { amtPretty = mistToSuiDecimal(BigInt(amtRaw)); } catch {}
+    }
+    explainer = sender && recipients.length > 0
+      ? `${shortAddress(sender)} sent ${amtPretty} ${sym} to ${shortAddress(recipients[0])}`
+      : null;
+  } else {
+    explainer = summary; // fallback
+  }
+
+  // Gas used and total
+  const gu = tx?.effects?.gasUsed ?? {};
+  const computationCost = typeof gu?.computationCost === 'string' ? gu.computationCost : '0';
+  const storageCost = typeof gu?.storageCost === 'string' ? gu.storageCost : '0';
+  const storageRebate = typeof gu?.storageRebate === 'string' ? gu.storageRebate : '0';
+  const nonRefundableStorageFee = typeof gu?.nonRefundableStorageFee === 'string' ? gu.nonRefundableStorageFee : '0';
+  const totalGasUsedBi = bigIntSum([computationCost, storageCost, nonRefundableStorageFee]) - BigInt(storageRebate);
+
+  const gasUsed = {
+    computationCost: formatWithCommas(computationCost),
+    storageCost: formatWithCommas(storageCost),
+    storageRebate: formatWithCommas(storageRebate),
+    nonRefundableStorageFee: formatWithCommas(nonRefundableStorageFee),
+    totalGasUsed: formatWithCommas(totalGasUsedBi.toString()),
+  };
 
   // Move call (heuristic for SUI transfers)
   const moveCall = recipients.length > 0 && receivedMist > 0n
@@ -282,6 +320,7 @@ export function summarizeTransfer(tx: any): FrontendTxSummary {
     status,
     executedEpoch,
     summary,
+    explainer,
     gasUsed,
     participants: { sender, recipients },
     balanceChanges,

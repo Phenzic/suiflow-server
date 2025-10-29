@@ -78,7 +78,7 @@ SUI_MNEMONIC="word1 word2 ..."
   - Body JSON:
     - `digest` (string) or `transactionDigest` (string)
   - Returns JSON summary with:
-    - `sender`, `transfers` (array of `{ recipient, amount, coinType }`), `status`, `digest`, `gasUsed`
+    - `sender`, `transfers` (array of `{ recipient, amount, coinType }`), `status`, `digest`, `gasUsed`, `summary`, `explainer`, `objectChanges`, `moveCall`
 
 
 
