@@ -100,42 +100,194 @@ export async function getTransactionByDigest(digest: string) {
   return result;
 }
 
-export type TransferSummary = {
-  digest: string;
+export type FrontendTxSummary = {
+  transactionDigest: string;
   status: 'success' | 'failure';
-  sender: string | null;
-  transfers: Array<{ recipient: string; amount: string; coinType: string }>; // amount as string (MIST)
-  gasUsed?: {
-    computationCost?: string;
-    storageCost?: string;
-    storageRebate?: string;
-    nonRefundableStorageFee?: string;
+  executedEpoch: string | undefined;
+  summary: string | null;
+  gasUsed: {
+    computationCost: string;
+    storageCost: string;
+    storageRebate: string;
+    nonRefundableStorageFee: string;
+    totalGasUsed: string;
   };
+  participants: {
+    sender: string | null;
+    recipients: string[];
+  };
+  balanceChanges: Array<{
+    address: string;
+    amount: string; // signed with commas, in MIST
+    coinType: string; // simplified, e.g. SUI
+  }>;
+  objectChanges: {
+    created: Array<{ objectId: string; type: string; owner: string | null }>;
+    mutated: Array<{ objectId: string; type: string; owner: string | null }>;
+  };
+  moveCall: {
+    package: string;
+    module: string;
+    function: string;
+    arguments: string[];
+  } | null;
 };
 
-export function summarizeTransfer(tx: any): TransferSummary {
-  const digest: string = tx.digest ?? '';
-  const status: 'success' | 'failure' = tx?.effects?.status?.status === 'success' ? 'success' : 'failure';
-  const sender: string | null = tx?.transaction?.data?.sender ?? tx?.input?.sender ?? null;
+function formatWithCommas(absStr: string): string {
+  // absStr should be non-negative integer string
+  const n = absStr;
+  const re = /\B(?=(\d{3})+(?!\d))/g;
+  return n.replace(re, ',');
+}
 
-  const transfers: Array<{ recipient: string; amount: string; coinType: string }> = [];
-  const changes: any[] = Array.isArray(tx?.balanceChanges) ? tx.balanceChanges : [];
-  for (const ch of changes) {
-    const ownerAddr = ch?.owner?.AddressOwner;
-    const amountStr = ch?.amount;
-    const coinType = ch?.coinType ?? '0x2::sui::SUI';
-    if (ownerAddr && amountStr && typeof amountStr === 'string') {
+function formatSignedWithCommas(valueStr: string): string {
+  const trimmed = valueStr.trim();
+  const sign = trimmed.startsWith('-') ? '-' : '+';
+  const abs = trimmed.replace(/^[-+]/, '');
+  return `${sign}${formatWithCommas(abs)}`;
+}
+
+function bigIntSum(parts: Array<string | undefined>): bigint {
+  let total = 0n;
+  for (const p of parts) {
+    if (typeof p === 'string' && p) {
+      total += BigInt(p);
+    }
+  }
+  return total;
+}
+
+function bigIntSub(a?: string, b?: string): bigint {
+  const A = typeof a === 'string' && a ? BigInt(a) : 0n;
+  const B = typeof b === 'string' && b ? BigInt(b) : 0n;
+  return A - B;
+}
+
+function simplifyCoinType(coinType?: string): string {
+  if (!coinType) return 'SUI';
+  if (coinType.includes('::sui::SUI')) return 'SUI';
+  return coinType;
+}
+
+function shortAddress(addr: string | null | undefined): string | null {
+  if (!addr) return null;
+  const a = addr.toString();
+  if (a.length <= 14) return a;
+  return `${a.slice(0, 10)}...${a.slice(-4)}`;
+}
+
+function mistToSuiDecimal(mist: bigint): string {
+  const divisor = 1_000_000_000n;
+  const negative = mist < 0n;
+  const abs = negative ? -mist : mist;
+  const whole = abs / divisor;
+  const frac = abs % divisor;
+  const fracStr = frac.toString().padStart(9, '0').replace(/0+$/, '');
+  const base = fracStr.length ? `${whole.toString()}.${fracStr}` : `${whole.toString()}`;
+  return negative ? `-${base}` : base;
+}
+
+export function summarizeTransfer(tx: any): FrontendTxSummary {
+  const digest: string = tx?.digest ?? '';
+  const status: 'success' | 'failure' = tx?.effects?.status?.status === 'success' ? 'success' : 'failure';
+  const executedEpoch: string | undefined = tx?.effects?.executedEpoch;
+  const sender: string | null = tx?.input?.sender ?? tx?.transaction?.data?.sender ?? null;
+
+  // Balance changes and recipients
+  const balanceChangesArr: any[] = Array.isArray(tx?.balanceChanges) ? tx.balanceChanges : [];
+  const recipientsSet = new Set<string>();
+  const balanceChanges = balanceChangesArr.map((ch) => {
+    const addr: string = ch?.owner?.AddressOwner ?? '';
+    const amountStr: string = typeof ch?.amount === 'string' ? ch.amount : '0';
+    const coinType = simplifyCoinType(ch?.coinType);
+    try {
+      const amt = BigInt(amountStr);
+      if (amt > 0n) recipientsSet.add(addr);
+    } catch {}
+    return {
+      address: addr,
+      amount: formatSignedWithCommas(amountStr),
+      coinType,
+    };
+  });
+  const recipients = Array.from(recipientsSet);
+
+  // Total received SUI for summary (first positive SUI change)
+  let receivedMist = 0n;
+  for (const ch of balanceChangesArr) {
+    const coinType = ch?.coinType;
+    if (coinType && coinType.includes('::sui::SUI') && typeof ch?.amount === 'string') {
       try {
-        const amt = BigInt(amountStr);
+        const amt = BigInt(ch.amount);
         if (amt > 0n) {
-          transfers.push({ recipient: ownerAddr, amount: amountStr, coinType });
+          receivedMist += amt;
         }
       } catch {}
     }
   }
 
-  const gasUsed = tx?.effects?.gasUsed;
-  return { digest, status, sender, transfers, gasUsed };
+  const amountSui = mistToSuiDecimal(receivedMist);
+  const summary = sender && recipients.length > 0
+    ? `${shortAddress(sender)} transferred ${amountSui} SUI to ${shortAddress(recipients[0])}`
+    : null;
+
+  // Gas used and total
+  const gu = tx?.effects?.gasUsed ?? {};
+  const computationCost = typeof gu?.computationCost === 'string' ? gu.computationCost : '0';
+  const storageCost = typeof gu?.storageCost === 'string' ? gu.storageCost : '0';
+  const storageRebate = typeof gu?.storageRebate === 'string' ? gu.storageRebate : '0';
+  const nonRefundableStorageFee = typeof gu?.nonRefundableStorageFee === 'string' ? gu.nonRefundableStorageFee : '0';
+  const totalGasUsedBi = bigIntSum([computationCost, storageCost, nonRefundableStorageFee]) - BigInt(storageRebate);
+
+  const gasUsed = {
+    computationCost: formatWithCommas(computationCost),
+    storageCost: formatWithCommas(storageCost),
+    storageRebate: formatWithCommas(storageRebate),
+    nonRefundableStorageFee: formatWithCommas(nonRefundableStorageFee),
+    totalGasUsed: formatWithCommas(totalGasUsedBi.toString()),
+  };
+
+  // Object changes
+  const objectChangesArr: any[] = Array.isArray(tx?.objectChanges) ? tx.objectChanges : [];
+  const created = objectChangesArr
+    .filter((o) => o?.type === 'created')
+    .map((o) => ({
+      objectId: o?.objectId,
+      type: o?.objectType,
+      owner: o?.owner?.AddressOwner ?? null,
+    }));
+  const mutated = objectChangesArr
+    .filter((o) => o?.type === 'mutated')
+    .map((o) => ({
+      objectId: o?.objectId,
+      type: o?.objectType,
+      owner: o?.owner?.AddressOwner ?? null,
+    }));
+
+  // Move call (heuristic for SUI transfers)
+  const moveCall = recipients.length > 0 && receivedMist > 0n
+    ? {
+        package: '0x2',
+        module: 'coin',
+        function: 'transfer',
+        arguments: [
+          `amount: ${formatWithCommas(receivedMist.toString())}`,
+          `recipient: ${shortAddress(recipients[0])}`,
+        ],
+      }
+    : null;
+
+  return {
+    transactionDigest: digest,
+    status,
+    executedEpoch,
+    summary,
+    gasUsed,
+    participants: { sender, recipients },
+    balanceChanges,
+    objectChanges: { created, mutated },
+    moveCall,
+  };
 }
 
 

@@ -49,7 +49,7 @@ export class TransferController {
 }
 
 export class TransferQueryController {
-  public static async getTreansfer(req: Request, res: Response): Promise<void> {
+  public static async getTransfer(req: Request, res: Response): Promise<void> {
     const { digest, transactionDigest } = req.body ?? {};
     const value = (typeof digest === 'string' ? digest : (typeof transactionDigest === 'string' ? transactionDigest : ''));
     if (!value) {
@@ -59,7 +59,7 @@ export class TransferQueryController {
     try {
       const full = await getTransactionByDigest(value);
       const summary = summarizeTransfer(full);
-      res.json({ ok: true, summary });
+      res.json(summary);
     } catch (err) {
       res.status(400).json({ ok: false, error: (err as Error).message });
     }

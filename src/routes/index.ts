@@ -6,7 +6,7 @@ const router = Router();
 
 router.get('/', HomeController.index);
 router.post('/simulate-transfer', TransferController.simulateTransfer);
-router.post('/get-treansfer', TransferQueryController.getTreansfer);
+router.post('/get-transfer', TransferQueryController.getTransfer);
 
 export default router;
 
