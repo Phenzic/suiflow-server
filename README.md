@@ -53,3 +53,21 @@ src/
   middlewares/         # Express middlewares
   utils/               # Utilities (e.g., logger)
 ```
+
+## Environment
+
+Copy `env.example` to `.env` and set values:
+
+```
+SUI_NETWORK=mainnet
+SUI_MNEMONIC="word1 word2 ..."
+```
+
+## API
+
+- POST `/simulate-transfer`
+  - Body JSON:
+    - `amount` (u64, in MIST)
+    - `recipientAddress` (string, 0x...)
+    - `senderAddress` (string, 0x...)
+  - Returns: dry-run result from Sui fullnode. No on-chain transaction is submitted.
