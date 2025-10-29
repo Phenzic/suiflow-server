@@ -74,7 +74,7 @@ SUI_MNEMONIC="word1 word2 ..."
   - Returns: on-chain submission result from Sui testnet (signed and executed).
 
 
-- POST `/get-transfer`
+- POST `/digest`
   - Body JSON:
     - `digest` (string) or `transactionDigest` (string)
   - Returns JSON summary with:
