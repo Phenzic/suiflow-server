@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express';
-import { simulateTransfer } from '../services/suiService';
+import { executeTransfer } from '../services/suiService';
 
 function parseAmountToBigInt(input: unknown): bigint | null {
   if (typeof input === 'number' && Number.isFinite(input) && input >= 0) {
@@ -17,6 +17,8 @@ function parseAmountToBigInt(input: unknown): bigint | null {
 export class TransferController {
   public static async simulateTransfer(req: Request, res: Response): Promise<void> {
     const { amount, recipientAddress, senderAddress } = req.body ?? {};
+    // Support both JSON keys: "--sui-coin-object-id" and "suiCoinObjectId"
+    const suiCoinObjectId: unknown = (req.body?.['--sui-coin-object-id'] ?? req.body?.suiCoinObjectId);
 
     const amountBig = parseAmountToBigInt(amount);
     if (!amountBig || !recipientAddress || !senderAddress) {
@@ -33,12 +35,13 @@ export class TransferController {
     }
 
     try {
-      const simulation = await simulateTransfer({
+      const submission = await executeTransfer({
         amount: amountBig,
         recipientAddress,
         senderAddress,
+        suiCoinObjectId: typeof suiCoinObjectId === 'string' ? suiCoinObjectId : undefined,
       });
-      res.json({ ok: true, simulation });
+      res.json({ ok: true, submission });
     } catch (err) {
       res.status(400).json({ ok: false, error: (err as Error).message });
     }

@@ -13,7 +13,7 @@ yarn install
 
 ## Scripts
 
-- `yarn dev`: Run the server in watch mode with TypeScript via `tsx`
+- `yarn dev`: Run the server with live-reload via `nodemon`
 - `yarn build`: Compile TypeScript to `dist`
 - `yarn start`: Run compiled server from `dist`
 - `yarn typecheck`: Type-check without emitting
@@ -59,7 +59,7 @@ src/
 Copy `env.example` to `.env` and set values:
 
 ```
-SUI_NETWORK=mainnet
+SUI_NETWORK=testnet
 SUI_MNEMONIC="word1 word2 ..."
 ```
 
@@ -70,4 +70,18 @@ SUI_MNEMONIC="word1 word2 ..."
     - `amount` (u64, in MIST)
     - `recipientAddress` (string, 0x...)
     - `senderAddress` (string, 0x...)
-  - Returns: dry-run result from Sui fullnode. No on-chain transaction is submitted.
+    - `--sui-coin-object-id` (string, optional; specific SUI coin object to spend)
+  - Returns: on-chain submission result from Sui testnet (signed and executed).
+
+
+
+- Simulate Transfer Endpoint
+
+
+```
+curl -X POST http://localhost:3000/simulate-transfer   -H "Content-Type: application/json"   -d '{
+    "amount": "1000000",
+    "recipientAddress": "0x4aa0d92faeda9ec7e24feb2778d65b6898824cc0b54f687e74940ed4b8a59072",
+    "senderAddress": "0xad8ea1c01789781777013d67200898da65c7c3736c612126f4c1afc9c310923e"
+  }'
+```
