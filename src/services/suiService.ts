@@ -329,10 +329,10 @@ export function summarizeTransfer(tx: any): FrontendTxSummary {
   };
 }
 
-export async function generateAiExplainer(summary: FrontendTxSummary): Promise<string | null> {
+export async function generateAiExplainer(summary: FrontendTxSummary): Promise<string> {
+  const controller = new AbortController();
+  const to = setTimeout(() => controller.abort(), config.ollamaTimeoutMs);
   try {
-    const controller = new AbortController();
-    const to = setTimeout(() => controller.abort(), config.ollamaTimeoutMs);
     const prompt = `Explain this Sui transaction: ${JSON.stringify(summary)}`;
     const res = await fetch(`${config.ollamaBaseUrl}/api/generate`, {
       method: 'POST',
@@ -342,13 +342,16 @@ export async function generateAiExplainer(summary: FrontendTxSummary): Promise<s
     } as any);
     clearTimeout(to);
     if (!res.ok) {
-      return null;
+      const txt = await res.text().catch(() => '');
+      throw new Error(`Ollama error ${res.status}: ${txt}`);
     }
     const data = await res.json();
     const text: string | undefined = (data && (data.response as string)) || undefined;
-    return typeof text === 'string' ? text : null;
-  } catch {
-    return null;
+    if (!text) throw new Error('Ollama returned empty response');
+    return text;
+  } catch (e) {
+    clearTimeout(to);
+    throw e instanceof Error ? e : new Error('AI explainer failed');
   }
 }
 

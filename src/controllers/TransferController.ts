@@ -75,8 +75,12 @@ export class TransferQueryController {
     try {
       const full = await getTransactionByDigest(value);
       const summary = summarizeTransfer(full);
-      const ai = await generateAiExplainer(summary);
-      res.json({ ...summary, ['ai-explainer']: ai ?? '' });
+      try {
+        const ai = await generateAiExplainer(summary);
+        res.json({ ...summary, ['ai-explainer']: ai });
+      } catch (aiErr) {
+        res.json({ ...summary, ['ai-explainer']: '', aiExplainerError: (aiErr as Error).message });
+      }
     } catch (err) {
       res.status(400).json({ ok: false, error: (err as Error).message });
     }
