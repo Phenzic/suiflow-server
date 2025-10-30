@@ -1,0 +1,14 @@
+node_modules
+.git
+.gitignore
+.env
+.cache
+.yarn
+coverage
+build
+**/.DS_Store
+
+# Yarn PnP artifacts (not needed if using node_modules linker)
+.pnp.*
+
+

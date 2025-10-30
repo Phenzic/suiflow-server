@@ -5,6 +5,7 @@ import { TransferController, TransferQueryController } from '../controllers/Tran
 const router = Router();
 
 router.get('/', HomeController.index);
+router.get('/health', (_req, res) => res.json({ ok: true }));
 router.post('/simulate-transfer', TransferController.simulateTransfer);
 router.post('/digest', TransferQueryController.getTransfer);
 router.post('/ai-digest', TransferQueryController.getAiDigest);
