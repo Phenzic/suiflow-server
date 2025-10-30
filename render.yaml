@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: suiflow-server
+    env: node
+    plan: free
+    buildCommand: >
+      corepack enable &&
+      corepack prepare yarn@4.6.0 --activate &&
+      yarn --version &&
+      yarn install --immutable &&
+      yarn build
+    startCommand: node dist/server.js
+    envVars:
+      - key: NODE_VERSION
+        value: 20
