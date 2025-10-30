@@ -3,18 +3,17 @@ FROM node:20-alpine AS base
 
 WORKDIR /app
 
-# Copy Yarn and project config first
-COPY package.json yarn.lock .yarnrc.yml ./
+# Copy Yarn setup first
 COPY .yarn .yarn
-COPY .yarn/releases .yarn/releases
+COPY .yarnrc.yml package.json yarn.lock ./
 
-# Install dependencies
+# Enable Corepack and install deps
 RUN corepack enable && yarn install --immutable
 
-# Copy rest of the application
+# Copy rest of the source
 COPY . .
 
-# Build your app
+# Build
 RUN yarn build
 
 CMD ["yarn", "start"]
