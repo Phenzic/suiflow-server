@@ -9,7 +9,7 @@ WORKDIR /app
 FROM base AS deps
 COPY package.json yarn.lock ./
 # Respect Yarn version from package.json: "packageManager"
-RUN yarn install --immutable
+RUN node -v && yarn -v && yarn install --immutable
 
 # Build the app
 FROM deps AS build
@@ -21,6 +21,7 @@ RUN yarn build
 FROM node:20-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
+ENV LOG_LEVEL=info
 COPY --from=deps /app/node_modules ./node_modules
 COPY package.json ./package.json
 COPY dist ./dist

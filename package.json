@@ -2,9 +2,11 @@
   "name": "suiflow",
   "packageManager": "yarn@4.6.0",
   "scripts": {
-    "dev": "tsx watch src/server.ts",
+    "dev": "nodemon",
+    "dev:debug": "LOG_LEVEL=debug nodemon",
     "build": "tsc -p tsconfig.json",
     "start": "node dist/server.js",
+    "start:debug": "LOG_LEVEL=debug node dist/server.js",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
