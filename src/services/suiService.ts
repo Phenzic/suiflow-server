@@ -330,11 +330,23 @@ export function summarizeTransfer(tx: any): FrontendTxSummary {
   };
 }
 
+const BASE_TEMPLATE = `\n This Sui transaction is a transfer of 0.2 SUI (Sui token) from the sender \naddress \n"0x4aa0d92faeda9ec7e24feb2778d65b6898824cc0b54f687e74940ed4b8a59072" to \nthe recipient address \n"0xb6a150da076e313901d39ed773c4f1eb6a2dbef7a14e535dfd5a494915762511".\n\nThe transaction was executed in epoch 902 and cost a total of 2,007,760 \ngas units. The gas cost breakdown is as follows:\n- Computation cost: 1,000,000\n- Storage cost: 1,976,000\n- Storage rebate: 978,120\n- Non-refundable storage fee: 9,880\n\nThe sender's balance decreased by 201,997,880 SUI, and the recipient's \nbalance increased by 200,000,000 SUI. Additionally, a new coin object with \nID "0xc29f282e6a621d53c5b61eb67edf211bf5d059d520ead774bc4d61acb56e0043" \nwas created, and another coin object with ID \n"0x273202886bcd172ab683dc0545bc055c8e5d38eb2d4cdca5d7a7b96b89df748e" was \nmutated.\n\nThe transaction invokes the "transfer" function from the "coin" module of \npackage "0x2". The arguments passed to this function are "amount: \n200,000,000" and "recipient: 0xb6a150da...2511". This function is used to \ntransfer SUI tokens between addresses.\n`;
+
+function buildExplainerPrompt(summary: FrontendTxSummary): string {
+  return [
+    'You are an AI explainer and your job is to briefly explain a transaction based on the transaction digest given to you from the Sui network.',
+    'Follow this template for your response:',
+    BASE_TEMPLATE,
+    'Now explain this Sui transaction:',
+    JSON.stringify(summary, null, 2)
+  ].join('\n\n');
+}
+
 async function generateAiExplainerOllama(summary: FrontendTxSummary): Promise<string> {
   const controller = new AbortController();
   const to = setTimeout(() => controller.abort(), config.ollamaTimeoutMs);
   try {
-    const prompt = `Explain this Sui transaction: ${JSON.stringify(summary)}`;
+    const prompt = buildExplainerPrompt(summary);
     const res = await fetch(`${config.ollamaBaseUrl}/api/generate`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -359,7 +371,7 @@ async function generateAiExplainerOllama(summary: FrontendTxSummary): Promise<st
 async function generateAiExplainerGoogle(summary: FrontendTxSummary): Promise<string> {
   if (!config.googleApiKey) throw new Error('GOOGLE_API_KEY not set');
   const ai = new GoogleGenAI({ apiKey: config.googleApiKey, httpOptions: { apiVersion: 'v1alpha' } as any } as any);
-  const prompt = `Explain this Sui transaction: ${JSON.stringify(summary)}`;
+  const prompt = buildExplainerPrompt(summary);
   const resp: any = await ai.models.generateContent({ model: config.googleModel, contents: prompt } as any);
   const text: string | undefined = (resp && (resp.text as string)) || (resp?.response?.text as string);
   if (!text) throw new Error('GoogleGenAI returned empty response');
@@ -372,5 +384,6 @@ export async function generateAiExplainer(summary: FrontendTxSummary): Promise<s
   }
   return await generateAiExplainerOllama(summary);
 }
+
 
 
