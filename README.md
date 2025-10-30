@@ -61,9 +61,12 @@ Copy `env.example` to `.env` and set values:
 ```
 SUI_NETWORK=testnet
 SUI_MNEMONIC="word1 word2 ..."
+AI_PROVIDER=google
+GOOGLE_API_KEY=your_google_api_key
+GOOGLE_MODEL=gemini-2.0-flash
 OLLAMA_BASE_URL=http://localhost:11434
 OLLAMA_MODEL=mistral
-OLLAMA_TIMEOUT_MS=8000
+OLLAMA_TIMEOUT_MS=20000
 ```
 
 ## API
@@ -88,7 +91,7 @@ OLLAMA_TIMEOUT_MS=8000
     - `digest` (string) or `transactionDigest` (string)
   - Returns JSON summary plus AI field:
     - same as `/digest` plus `ai-explainer`
-  - Requires local Ollama (see Environment); if unreachable, `ai-explainer` will be empty.
+  - Requires either Google API (default) or local Ollama (if `AI_PROVIDER=ollama`). If unreachable, `ai-explainer` will be empty and `aiExplainerError` will be included.
 
 
 

@@ -2,6 +2,7 @@ import { SuiClient, getFullnodeUrl } from '@mysten/sui.js/client';
 import { TransactionBlock } from '@mysten/sui.js/transactions';
 import { Ed25519Keypair } from '@mysten/sui.js/keypairs/ed25519';
 import { config } from '../config';
+import { GoogleGenAI } from '@google/genai';
 import { normalizeSuiAddress, isValidSuiObjectId } from '@mysten/sui.js/utils';
 
 export type SimulateTransferParams = {
@@ -329,7 +330,7 @@ export function summarizeTransfer(tx: any): FrontendTxSummary {
   };
 }
 
-export async function generateAiExplainer(summary: FrontendTxSummary): Promise<string> {
+async function generateAiExplainerOllama(summary: FrontendTxSummary): Promise<string> {
   const controller = new AbortController();
   const to = setTimeout(() => controller.abort(), config.ollamaTimeoutMs);
   try {
@@ -353,6 +354,23 @@ export async function generateAiExplainer(summary: FrontendTxSummary): Promise<s
     clearTimeout(to);
     throw e instanceof Error ? e : new Error('AI explainer failed');
   }
+}
+
+async function generateAiExplainerGoogle(summary: FrontendTxSummary): Promise<string> {
+  if (!config.googleApiKey) throw new Error('GOOGLE_API_KEY not set');
+  const ai = new GoogleGenAI({ apiKey: config.googleApiKey, httpOptions: { apiVersion: 'v1alpha' } as any } as any);
+  const prompt = `Explain this Sui transaction: ${JSON.stringify(summary)}`;
+  const resp: any = await ai.models.generateContent({ model: config.googleModel, contents: prompt } as any);
+  const text: string | undefined = (resp && (resp.text as string)) || (resp?.response?.text as string);
+  if (!text) throw new Error('GoogleGenAI returned empty response');
+  return text;
+}
+
+export async function generateAiExplainer(summary: FrontendTxSummary): Promise<string> {
+  if (config.aiProvider === 'google') {
+    return await generateAiExplainerGoogle(summary);
+  }
+  return await generateAiExplainerOllama(summary);
 }
 
 
