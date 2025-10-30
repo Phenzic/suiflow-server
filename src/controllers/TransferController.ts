@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express';
-import { executeTransfer, getTransactionByDigest, summarizeTransfer } from '../services/suiService';
+import { executeTransfer, getTransactionByDigest, summarizeTransfer, generateAiExplainer } from '../services/suiService';
 
 function parseAmountToBigInt(input: unknown): bigint | null {
   if (typeof input === 'number' && Number.isFinite(input) && input >= 0) {
@@ -60,6 +60,23 @@ export class TransferQueryController {
       const full = await getTransactionByDigest(value);
       const summary = summarizeTransfer(full);
       res.json(summary);
+    } catch (err) {
+      res.status(400).json({ ok: false, error: (err as Error).message });
+    }
+  }
+
+  public static async getAiDigest(req: Request, res: Response): Promise<void> {
+    const { digest, transactionDigest } = req.body ?? {};
+    const value = (typeof digest === 'string' ? digest : (typeof transactionDigest === 'string' ? transactionDigest : ''));
+    if (!value) {
+      res.status(400).json({ error: 'digest is required' });
+      return;
+    }
+    try {
+      const full = await getTransactionByDigest(value);
+      const summary = summarizeTransfer(full);
+      const ai = await generateAiExplainer(summary);
+      res.json({ ...summary, ['ai-explainer']: ai ?? '' });
     } catch (err) {
       res.status(400).json({ ok: false, error: (err as Error).message });
     }

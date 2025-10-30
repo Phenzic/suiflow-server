@@ -329,4 +329,27 @@ export function summarizeTransfer(tx: any): FrontendTxSummary {
   };
 }
 
+export async function generateAiExplainer(summary: FrontendTxSummary): Promise<string | null> {
+  try {
+    const controller = new AbortController();
+    const to = setTimeout(() => controller.abort(), config.ollamaTimeoutMs);
+    const prompt = `Explain this Sui transaction: ${JSON.stringify(summary)}`;
+    const res = await fetch(`${config.ollamaBaseUrl}/api/generate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: config.ollamaModel, prompt, stream: false }),
+      signal: controller.signal,
+    } as any);
+    clearTimeout(to);
+    if (!res.ok) {
+      return null;
+    }
+    const data = await res.json();
+    const text: string | undefined = (data && (data.response as string)) || undefined;
+    return typeof text === 'string' ? text : null;
+  } catch {
+    return null;
+  }
+}
+
 

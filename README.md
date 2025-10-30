@@ -61,6 +61,9 @@ Copy `env.example` to `.env` and set values:
 ```
 SUI_NETWORK=testnet
 SUI_MNEMONIC="word1 word2 ..."
+OLLAMA_BASE_URL=http://localhost:11434
+OLLAMA_MODEL=mistral
+OLLAMA_TIMEOUT_MS=8000
 ```
 
 ## API
@@ -77,8 +80,15 @@ SUI_MNEMONIC="word1 word2 ..."
 - POST `/digest`
   - Body JSON:
     - `digest` (string) or `transactionDigest` (string)
-  - Returns JSON summary with:
+  - Returns JSON summary without AI fields:
     - `sender`, `transfers` (array of `{ recipient, amount, coinType }`), `status`, `digest`, `gasUsed`, `summary`, `explainer`, `objectChanges`, `moveCall`
+
+- POST `/ai-digest`
+  - Body JSON:
+    - `digest` (string) or `transactionDigest` (string)
+  - Returns JSON summary plus AI field:
+    - same as `/digest` plus `ai-explainer`
+  - Requires local Ollama (see Environment); if unreachable, `ai-explainer` will be empty.
 
 
 
