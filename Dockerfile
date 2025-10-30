@@ -1,32 +1,18 @@
-# syntax=docker/dockerfile:1
+# ===== Base image =====
 FROM node:20-alpine AS base
-
-# Enable corepack (Yarn 4) and set workdir
-RUN corepack enable
 WORKDIR /app
-
-# Install deps in a separate layer
-FROM base AS deps
 COPY package.json yarn.lock ./
-# Respect Yarn version from package.json: "packageManager"
-RUN node -v && yarn -v && yarn install --immutable
+RUN corepack enable && yarn install --immutable
 
-# Build the app
-FROM deps AS build
-COPY tsconfig.json ./
-COPY src ./src
+# ===== Build stage =====
+FROM base AS build
+COPY . .
 RUN yarn build
 
-# Runtime image
+# ===== Runtime stage =====
 FROM node:20-alpine AS runner
 WORKDIR /app
-ENV NODE_ENV=production
-ENV LOG_LEVEL=info
-COPY --from=deps /app/node_modules ./node_modules
-COPY package.json ./package.json
-COPY dist ./dist
-
-EXPOSE 3000
+COPY --from=build /app/dist ./dist
+COPY package.json ./
+RUN corepack enable && yarn install --production --immutable
 CMD ["node", "dist/server.js"]
-
-
