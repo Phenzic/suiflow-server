@@ -18,10 +18,9 @@ const corsOptions = {
     const isLocalhost = /^https?:\/\/(localhost|127\.0\.0\.1|0\.0\.0\.0)(:\d+)?$/.test(origin);
     
     // Allow production domains (add your frontend domains here)
-    // Note: Origin headers don't include trailing slashes
     const allowedOrigins = [
-      'https://suiflow-servers.fly.dev',
-      'https://suiflow-server.onrender.com',
+      'https://suiflow-frontend.vercel.app/'
+      
       // Add more production domains as needed
     ];
     
