@@ -50,14 +50,23 @@ export class TransferController {
 
 export class TransferQueryController {
   public static async getTransfer(req: Request, res: Response): Promise<void> {
-    const { digest, transactionDigest } = req.body ?? {};
+    const { digest, transactionDigest, network } = req.body ?? {};
     const value = (typeof digest === 'string' ? digest : (typeof transactionDigest === 'string' ? transactionDigest : ''));
     if (!value) {
       res.status(400).json({ error: 'digest is required' });
       return;
     }
+    
+    // Validate network if provided
+    const validNetworks = ['mainnet', 'testnet', 'devnet'];
+    const networkParam = typeof network === 'string' ? network.toLowerCase() : undefined;
+    if (networkParam && !validNetworks.includes(networkParam)) {
+      res.status(400).json({ error: `Invalid network. Must be one of: ${validNetworks.join(', ')}` });
+      return;
+    }
+    
     try {
-      const full = await getTransactionByDigest(value);
+      const full = await getTransactionByDigest(value, networkParam as 'mainnet' | 'testnet' | 'devnet');
       const summary = summarizeTransfer(full);
       res.json(summary);
     } catch (err) {
@@ -66,14 +75,23 @@ export class TransferQueryController {
   }
 
   public static async getAiDigest(req: Request, res: Response): Promise<void> {
-    const { digest, transactionDigest } = req.body ?? {};
+    const { digest, transactionDigest, network } = req.body ?? {};
     const value = (typeof digest === 'string' ? digest : (typeof transactionDigest === 'string' ? transactionDigest : ''));
     if (!value) {
       res.status(400).json({ error: 'digest is required' });
       return;
     }
+    
+    // Validate network if provided
+    const validNetworks = ['mainnet', 'testnet', 'devnet'];
+    const networkParam = typeof network === 'string' ? network.toLowerCase() : undefined;
+    if (networkParam && !validNetworks.includes(networkParam)) {
+      res.status(400).json({ error: `Invalid network. Must be one of: ${validNetworks.join(', ')}` });
+      return;
+    }
+    
     try {
-      const full = await getTransactionByDigest(value);
+      const full = await getTransactionByDigest(value, networkParam as 'mainnet' | 'testnet' | 'devnet');
       const summary = summarizeTransfer(full);
       let ai = '';
       let aiError = '';

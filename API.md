@@ -9,21 +9,23 @@ Retrieve a formatted summary of a Sui transaction by its digest.
 Base url: https://suiflow-servers.fly.dev/
 Base url2: https://suiflow-server.onrender.com/ 
 
-**Endpoint:** `POST /ai-digest`
+**Endpoint:** `POST /digest`
 
 **Request:**
 
 ```bash
-curl -X POST http://localhost:3000/digest \
+curl -X POST https://suiflow-servers.fly.dev/digest \
   -H "Content-Type: application/json" \
   -d '{
-    "digest": "DmH3PWELG2ts4fNVrYcGFTp524Twmvo2CrALVYzqvBaf"
+    "digest": "DmH3PWELG2ts4fNVrYcGFTp524Twmvo2CrALVYzqvBaf",
+    "network": "testnet"
   }'
 ```
 
 **Request Body:**
 - `digest` (string, required): The transaction digest hash
 - `transactionDigest` (string, optional): Alternative field name (same as `digest`)
+- `network` (string, optional): Network to query. Must be one of: `"mainnet"`, `"testnet"`, `"devnet"`. Defaults to server's default network if not specified.
 
 **Response Example:**
 
@@ -119,17 +121,41 @@ curl -X POST http://localhost:3000/digest \
   - `function` (string): Function name
   - `arguments` (array): Function arguments
 
-**Error Response:**
+**Error Responses:**
 
+Missing digest:
 ```json
 {
   "error": "digest is required"
 }
 ```
 
+Invalid network:
+```json
+{
+  "error": "Invalid network. Must be one of: mainnet, testnet, devnet"
+}
+```
+
+Transaction not found on specified network (auto-detects correct network):
+```json
+{
+  "ok": false,
+  "error": "Transaction not found on testnet. This transaction exists on mainnet. Please use network=\"mainnet\" in your request."
+}
+```
+
+Transaction not found on any network:
+```json
+{
+  "ok": false,
+  "error": "Transaction \"DmH3PWELG2ts4fNVrYcGFTp524Twmvo2CrALVYzqvBaf\" not found on testnet network. Please verify the digest is correct and try with network=\"mainnet\", network=\"testnet\", or network=\"devnet\"."
+}
+```
+
 **Status Codes:**
 - `200`: Success
-- `400`: Bad Request (missing or invalid digest)
+- `400`: Bad Request (missing/invalid digest, invalid network, or transaction not found)
 
 ---
 
@@ -139,11 +165,27 @@ For AI-generated explanations, use the `/ai-digest` endpoint which includes an a
 
 **Endpoint:** `POST /ai-digest`
 
-**Request:** Same as `/digest`
+**Request:**
+
+```bash
+curl -X POST https://suiflow-servers.fly.dev/ai-digest \
+  -H "Content-Type: application/json" \
+  -d '{
+    "digest": "DmH3PWELG2ts4fNVrYcGFTp524Twmvo2CrALVYzqvBaf",
+    "network": "testnet"
+  }'
+```
+
+**Request Body:** Same as `/digest`
+- `digest` (string, required): The transaction digest hash
+- `transactionDigest` (string, optional): Alternative field name
+- `network` (string, optional): Network to query (`"mainnet"`, `"testnet"`, or `"devnet"`)
 
 **Response:** Same as `/digest` plus:
 - `ai-explainer` (string): AI-generated detailed explanation of the transaction
 - `aiExplainerError` (string): Error message if AI generation failed (empty string if successful)
 
 **Note:** The AI explainer requires configuration of either Google GenAI or Ollama. If unavailable, `ai-explainer` will be an empty string.
+
+**Error Responses:** Same as `/digest` endpoint (see above).
 

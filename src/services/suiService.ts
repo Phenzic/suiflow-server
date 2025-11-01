@@ -12,8 +12,9 @@ export type SimulateTransferParams = {
   suiCoinObjectId?: string;
 };
 
-export function createSuiClient(): SuiClient {
-  return new SuiClient({ url: getFullnodeUrl(config.suiNetwork as 'mainnet' | 'testnet' | 'devnet') });
+export function createSuiClient(network?: 'mainnet' | 'testnet' | 'devnet'): SuiClient {
+  const networkToUse = network ?? (config.suiNetwork as 'mainnet' | 'testnet' | 'devnet');
+  return new SuiClient({ url: getFullnodeUrl(networkToUse) });
 }
 
 export function getKeypairFromEnv(): Ed25519Keypair {
@@ -86,19 +87,52 @@ export async function executeTransfer(params: SimulateTransferParams) {
   return result;
 }
 
-export async function getTransactionByDigest(digest: string) {
-  const client = createSuiClient();
-  const result = await client.getTransactionBlock({
-    digest,
-    options: {
-      showInput: true,
-      showEffects: true,
-      showEvents: true,
-      showObjectChanges: true,
-      showBalanceChanges: true,
-    },
-  });
-  return result;
+export async function getTransactionByDigest(digest: string, network?: 'mainnet' | 'testnet' | 'devnet') {
+  const client = createSuiClient(network);
+  
+  try {
+    const result = await client.getTransactionBlock({
+      digest,
+      options: {
+        showInput: true,
+        showEffects: true,
+        showEvents: true,
+        showObjectChanges: true,
+        showBalanceChanges: true,
+      },
+    });
+    return result;
+  } catch (error: any) {
+    // If transaction not found, try other networks to suggest the correct one
+    const errorMsg = error?.message?.toLowerCase() || '';
+    if (errorMsg.includes('not found') || errorMsg.includes('could not find')) {
+      const networks: Array<'mainnet' | 'testnet' | 'devnet'> = ['mainnet', 'testnet', 'devnet'];
+      const requestedNetwork = network ?? config.suiNetwork;
+      const otherNetworks = networks.filter(n => n !== requestedNetwork);
+      
+      // Try other networks to find the correct one
+      for (const otherNetwork of otherNetworks) {
+        try {
+          const otherClient = createSuiClient(otherNetwork);
+          await otherClient.getTransactionBlock({ digest, options: {} as any });
+          // If we get here, transaction exists on this network
+          throw new Error(
+            `Transaction not found on ${requestedNetwork}. This transaction exists on ${otherNetwork}. Please use network="${otherNetwork}" in your request.`
+          );
+        } catch (otherError: any) {
+          // Continue to next network
+          continue;
+        }
+      }
+      
+      // Transaction not found on any network
+      throw new Error(
+        `Transaction "${digest}" not found on ${requestedNetwork} network. Please verify the digest is correct and try with network="mainnet", network="testnet", or network="devnet".`
+      );
+    }
+    // Re-throw other errors
+    throw error;
+  }
 }
 
 export type FrontendTxSummary = {
