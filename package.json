@@ -1,5 +1,5 @@
 {
-  "name": "suiflow",
+  "name": "suivle",
   "packageManager": "yarn@4.6.0",
   "scripts": {
     "dev": "nodemon",

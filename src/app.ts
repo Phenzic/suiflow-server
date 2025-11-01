@@ -8,8 +8,8 @@ const app = express();
 
 // CORS configuration - allow localhost and production domains
 const allowedOrigins = [
-  'https://suiflow-frontend.vercel.app',
-  'https://suiflow.vercel.app',
+  'https://suivle-frontend.vercel.app',
+  'https://suivle.vercel.app',
 ];
 
 const corsOptions = {

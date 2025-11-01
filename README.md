@@ -1,9 +1,8 @@
-# SuiFlow – On-Chain Transaction Explainer (Backend)
+# Suivle – On-Chain Transaction Explainer (Backend)
 
-![SuiFlow Demo](https://github.com/user-attachments/assets/1c072179-0453-469f-aacc-eafd0f3723ea)
+![Suivle Demo](https://github.com/user-attachments/assets/1c072179-0453-469f-aacc-eafd0f3723ea)
 
-
-> **SuiFlow** is an intelligent backend service that connects directly with the Sui blockchain to fetch, parse, and humanize transaction data. It converts raw blockchain responses into readable JSON summaries — including participants, amounts, transaction digests, and gas analytics — ready to be rendered in a user-friendly visual flow.
+> **Suivle** is an intelligent backend service that connects directly with the Sui blockchain to fetch, parse, and humanize transaction data. It converts raw blockchain responses into readable JSON summaries — including participants, amounts, transaction digests, and gas analytics — ready to be rendered in a user-friendly visual flow.
 
 ## 🚀 Features
 
@@ -97,7 +96,7 @@ src/
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd suiflow
+   cd suivle
    ```
 
 2. **Enable Corepack and prepare Yarn**
@@ -158,8 +157,8 @@ The server will start on `http://localhost:3000` (or `PORT` env variable).
 
 ### Base URLs
 
-- **Production:** `https://suiflow-servers.fly.dev`
-- **Alternate:** `https://suiflow-server.onrender.com`
+- **Production:** `https://suivle-servers.fly.dev`
+- **Alternate:** `https://suivle-server.onrender.com`
 
 ### Endpoints
 
@@ -179,7 +178,7 @@ Retrieve a formatted summary of a Sui transaction by its digest (without AI expl
 
 **Request:**
 ```bash
-curl -X POST https://suiflow-servers.fly.dev/digest \
+curl -X POST https://suivle-servers.fly.dev/digest \
   -H "Content-Type: application/json" \
   -d '{
     "digest": "DmH3PWELG2ts4fNVrYcGFTp524Twmvo2CrALVYzqvBaf"
@@ -195,7 +194,7 @@ Retrieve transaction summary with AI-generated explanation.
 
 **Request:**
 ```bash
-curl -X POST https://suiflow-servers.fly.dev/ai-digest \
+curl -X POST https://suivle-servers.fly.dev/ai-digest \
   -H "Content-Type: application/json" \
   -d '{
     "digest": "DmH3PWELG2ts4fNVrYcGFTp524Twmvo2CrALVYzqvBaf"
@@ -213,7 +212,7 @@ Execute a SUI token transfer on the Sui testnet.
 
 **Request:**
 ```bash
-curl -X POST https://suiflow-servers.fly.dev/simulate-transfer \
+curl -X POST https://suivle-servers.fly.dev/simulate-transfer \
   -H "Content-Type: application/json" \
   -d '{
     "amount": "1000000",
@@ -253,7 +252,7 @@ curl -X POST https://suiflow-servers.fly.dev/simulate-transfer \
 ### Build
 
 ```bash
-docker build -t suiflow:latest .
+docker build -t suivle:latest .
 ```
 
 ### Run
@@ -263,7 +262,7 @@ docker run -p 3000:3000 \
   -e SUI_NETWORK=testnet \
   -e SUI_MNEMONIC="your mnemonic" \
   -e GOOGLE_API_KEY="your key" \
-  suiflow:latest
+  suivle:latest
 ```
 
 ### Docker Compose
@@ -276,7 +275,7 @@ See `docker-compose.yml` (if available) for full stack deployment.
 ### Fly.io
 
 ```bash
-flyctl deploy --build-only --push -a suiflow-server
+flyctl deploy --build-only --push -a suivle-servers
 ```
 
 ### Render.com

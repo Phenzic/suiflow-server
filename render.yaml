@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: suiflow-server
+    name: suivle-server
     env: node
     plan: free
     buildCommand: >

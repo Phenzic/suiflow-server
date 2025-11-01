@@ -1,9 +1,9 @@
-# fly.toml app configuration file generated for suiflow-servers on 2025-10-30T23:40:14Z
+# fly.toml app configuration file generated for suivle-servers on 2025-10-30T23:40:14Z
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = 'suiflow-servers'
+app = 'suivle-servers'
 primary_region = 'iad'
 
 [build]

@@ -2104,9 +2104,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"suiflow@workspace:.":
+"suivle@workspace:.":
   version: 0.0.0-use.local
-  resolution: "suiflow@workspace:."
+  resolution: "suivle@workspace:."
   dependencies:
     "@google/genai": "npm:^1.28.0"
     "@mysten/sui.js": "npm:^0.54.1"

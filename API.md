@@ -1,4 +1,4 @@
-# SuiFlow API Documentation
+# Suivle API Documentation
 
 ## Transaction Digest Endpoint
 
@@ -6,15 +6,15 @@
 
 Retrieve a formatted summary of a Sui transaction by its digest.
 
-Base url: https://suiflow-servers.fly.dev/
-Base url2: https://suiflow-server.onrender.com/ 
+Base url: https://suivle-servers.fly.dev/
+Base url2: https://suivle-server.onrender.com/ 
 
 **Endpoint:** `POST /digest`
 
 **Request:**
 
 ```bash
-curl -X POST https://suiflow-servers.fly.dev/digest \
+curl -X POST https://suivle-servers.fly.dev/digest \
   -H "Content-Type: application/json" \
   -d '{
     "digest": "DmH3PWELG2ts4fNVrYcGFTp524Twmvo2CrALVYzqvBaf",
@@ -168,7 +168,7 @@ For AI-generated explanations, use the `/ai-digest` endpoint which includes an a
 **Request:**
 
 ```bash
-curl -X POST https://suiflow-servers.fly.dev/ai-digest \
+curl -X POST https://suivle-servers.fly.dev/ai-digest \
   -H "Content-Type: application/json" \
   -d '{
     "digest": "DmH3PWELG2ts4fNVrYcGFTp524Twmvo2CrALVYzqvBaf",
