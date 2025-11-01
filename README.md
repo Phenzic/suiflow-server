@@ -1,8 +1,18 @@
-# Suivle – On-Chain Transaction Explainer (Backend)
+# Suivle Backend Services
 
 ![Suivle Demo](https://github.com/user-attachments/assets/1c072179-0453-469f-aacc-eafd0f3723ea)
 
-> **Suivle** is an intelligent backend service that connects directly with the Sui blockchain to fetch, parse, and humanize transaction data. It converts raw blockchain responses into readable JSON summaries — including participants, amounts, transaction digests, and gas analytics — ready to be rendered in a user-friendly visual flow.
+## About Suivle Labs
+
+Suivle Labs is a research and development collective dedicated to making the Sui blockchain more accessible, transparent, and user-friendly. 
+
+**SuiTE (Sui Transaction Explainer)** is our first product in this vision — the foundation for a broader ecosystem of interpretive and visual blockchain utilities we plan to build within the Sui ecosystem.
+
+## About This Backend
+
+This is **Suivle's unified backend infrastructure** — a multi-service API server designed to support multiple products and services. Currently, it powers **SuiTE (Sui Transaction Explainer)**, our transaction analysis and visualization tool.
+
+The backend provides intelligent transaction processing, AI-powered explanations, and structured data APIs that make complex blockchain transactions human-readable and actionable.
 
 ## 🚀 Features
 
@@ -292,13 +302,18 @@ node dist/server.js
 
 ## 🧩 Roadmap
 
+### Current Services (SuiTE)
 - ✅ MVP API for transaction fetching and summarization
 - ✅ AI-powered contextual transaction explainer
 - 🔄 Expanded support for NFT & multi-asset transactions
 - 📋 Historical wallet & analytics tracking
 - 📋 Full integration with React Flow front-end
+
+### Backend Infrastructure
 - 📋 Rate limiting and caching
 - 📋 GraphQL API endpoint
+- 📋 Multi-service routing and namespace management
+- 📋 Additional services to be announced
 
 ## 🔗 Related Links
 

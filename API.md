@@ -1,8 +1,12 @@
 # Suivle API Documentation
 
-## Transaction Digest Endpoint
+This is the API documentation for **Suivle's unified backend services**. Currently, the backend powers **SuiTE (Sui Transaction Explainer)**, with additional services planned for the future.
 
-### GET Transaction Summary
+---
+
+## SuiTE Endpoints
+
+### Transaction Digest Endpoint
 
 Retrieve a formatted summary of a Sui transaction by its digest.
 
