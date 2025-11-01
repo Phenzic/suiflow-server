@@ -302,14 +302,6 @@ node dist/server.js
 - 📋 Rate limiting and caching
 - 📋 GraphQL API endpoint
 
-
-**Frontend visualization** is developed by @Kins and integrates seamlessly with this backend API.
-
-### Project Team
-
-- **Backend:** @MayowaJulius
-- **Frontend:** @Kins
-
 ## 🔗 Related Links
 
 - [Full API Documentation](./API.md)
