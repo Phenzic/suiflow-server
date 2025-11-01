@@ -1,5 +1,6 @@
 import type { Request, Response } from 'express';
 import { executeTransfer, getTransactionByDigest, summarizeTransfer, generateAiExplainer } from '../services/suiService';
+import { config } from '../config';
 
 function parseAmountToBigInt(input: unknown): bigint | null {
   if (typeof input === 'number' && Number.isFinite(input) && input >= 0) {
@@ -66,8 +67,9 @@ export class TransferQueryController {
     }
     
     try {
-      const full = await getTransactionByDigest(value, networkParam as 'mainnet' | 'testnet' | 'devnet');
-      const summary = summarizeTransfer(full);
+      const networkToUse = (networkParam as 'mainnet' | 'testnet' | 'devnet') ?? (config.suiNetwork as 'mainnet' | 'testnet' | 'devnet');
+      const full = await getTransactionByDigest(value, networkToUse);
+      const summary = summarizeTransfer(full, networkToUse);
       res.json(summary);
     } catch (err) {
       res.status(400).json({ ok: false, error: (err as Error).message });
@@ -91,8 +93,9 @@ export class TransferQueryController {
     }
     
     try {
-      const full = await getTransactionByDigest(value, networkParam as 'mainnet' | 'testnet' | 'devnet');
-      const summary = summarizeTransfer(full);
+      const networkToUse = (networkParam as 'mainnet' | 'testnet' | 'devnet') ?? (config.suiNetwork as 'mainnet' | 'testnet' | 'devnet');
+      const full = await getTransactionByDigest(value, networkToUse);
+      const summary = summarizeTransfer(full, networkToUse);
       let ai = '';
       let aiError = '';
       try {

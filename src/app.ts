@@ -14,13 +14,14 @@ const corsOptions = {
       return callback(null, true);
     }
     
-    // Allow localhost with any port
+    // Allow localhost with any port (e.g., localhost:3000, localhost:5173, 127.0.0.1:8080)
     const isLocalhost = /^https?:\/\/(localhost|127\.0\.0\.1|0\.0\.0\.0)(:\d+)?$/.test(origin);
     
     // Allow production domains (add your frontend domains here)
+    // Note: Origin headers don't include trailing slashes
     const allowedOrigins = [
-      'https://suiflow-frontend.vercel.app/'
-      
+      'https://suiflow-frontend.vercel.app',
+      'https://suiflow.vercel.app',
       // Add more production domains as needed
     ];
     
@@ -29,7 +30,8 @@ const corsOptions = {
     if (isLocalhost || isAllowedOrigin) {
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      logger.warn(`CORS blocked request from origin: ${origin}`);
+      callback(new Error(`Not allowed by CORS. Origin: ${origin}`));
     }
   },
   credentials: true,

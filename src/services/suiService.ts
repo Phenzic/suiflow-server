@@ -139,6 +139,7 @@ export type FrontendTxSummary = {
   transactionDigest: string;
   status: 'success' | 'failure';
   executedEpoch: string | undefined;
+  network: 'mainnet' | 'testnet' | 'devnet';
   summary: string | null;
   explainer: string | null;
   gasUsed: {
@@ -223,7 +224,7 @@ function mistToSuiDecimal(mist: bigint): string {
   return negative ? `-${base}` : base;
 }
 
-export function summarizeTransfer(tx: any): FrontendTxSummary {
+export function summarizeTransfer(tx: any, network: 'mainnet' | 'testnet' | 'devnet' = 'mainnet'): FrontendTxSummary {
   const digest: string = tx?.digest ?? '';
   const status: 'success' | 'failure' = tx?.effects?.status?.status === 'success' ? 'success' : 'failure';
   const executedEpoch: string | undefined = tx?.effects?.executedEpoch;
@@ -354,6 +355,7 @@ export function summarizeTransfer(tx: any): FrontendTxSummary {
     transactionDigest: digest,
     status,
     executedEpoch,
+    network,
     summary,
     explainer,
     gasUsed,
