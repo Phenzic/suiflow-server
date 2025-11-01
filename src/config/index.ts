@@ -1,7 +1,7 @@
 import 'dotenv/config';
 
 export const config = {
-  port: Number(process.env.PORT ?? 3000),
+  port: Number(process.env.PORT ?? 8080),
   suiNetwork: process.env.SUI_NETWORK ?? 'mainnet',
   suiMnemonic: process.env.SUI_MNEMONIC ?? '',
   ollamaBaseUrl: process.env.OLLAMA_BASE_URL ?? 'http://localhost:11434',
