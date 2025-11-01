@@ -1,11 +1,9 @@
 # SuiFlow – On-Chain Transaction Explainer (Backend)
 
-![SuiFlow Homepage](https://via.placeholder.com/1200x600/1a1b2e/84d46c?text=SuiFlow+Homepage)
+![SuiFlow Demo](https://github.com/user-attachments/assets/1c072179-0453-469f-aacc-eafd0f3723ea)
 
 
 > **SuiFlow** is an intelligent backend service that connects directly with the Sui blockchain to fetch, parse, and humanize transaction data. It converts raw blockchain responses into readable JSON summaries — including participants, amounts, transaction digests, and gas analytics — ready to be rendered in a user-friendly visual flow.
-
-⸻
 
 ## 🚀 Features
 
@@ -17,7 +15,6 @@
 - **Comprehensive gas analytics** with detailed breakdowns
 - **Production-ready API** with health checks and error handling
 
-⸻
 
 ## 🧠 Example Output
 
@@ -54,8 +51,6 @@
 }
 ```
 
-⸻
-
 ## 🛠️ Tech Stack
 
 - **Runtime:** Node.js 20+ (TypeScript)
@@ -65,7 +60,6 @@
 - **Package Manager:** Yarn 4.6.0 (Corepack)
 - **Deployment:** Fly.io / Render.com
 
-⸻
 
 ## 🏗️ Project Structure
 
@@ -88,7 +82,6 @@ src/
     └── logger.ts           # Structured logging
 ```
 
-⸻
 
 ## 🚀 Getting Started
 
@@ -161,8 +154,6 @@ yarn typecheck
 
 The server will start on `http://localhost:3000` (or `PORT` env variable).
 
-⸻
-
 ## 📡 API Endpoints
 
 ### Base URLs
@@ -181,7 +172,6 @@ Health check endpoint.
 { "ok": true }
 ```
 
----
 
 #### `POST /digest`
 
@@ -198,7 +188,6 @@ curl -X POST https://suiflow-servers.fly.dev/digest \
 
 **Response:** See [API.md](./API.md) for complete response structure.
 
----
 
 #### `POST /ai-digest`
 
@@ -217,7 +206,6 @@ curl -X POST https://suiflow-servers.fly.dev/ai-digest \
 - `ai-explainer` (string): AI-generated detailed explanation
 - `aiExplainerError` (string): Error message if AI generation failed
 
----
 
 #### `POST /simulate-transfer`
 
@@ -237,11 +225,9 @@ curl -X POST https://suiflow-servers.fly.dev/simulate-transfer \
 
 **Note:** Requires `SUI_MNEMONIC` in environment. The `senderAddress` must match the address derived from the mnemonic.
 
----
 
 📖 **Full API Documentation:** See [API.md](./API.md) for detailed request/response schemas.
 
-⸻
 
 ## 🔧 Configuration
 
@@ -261,7 +247,6 @@ curl -X POST https://suiflow-servers.fly.dev/simulate-transfer \
 
 *Required if `AI_PROVIDER=google`
 
-⸻
 
 ## 🐳 Docker Deployment
 
@@ -285,7 +270,6 @@ docker run -p 3000:3000 \
 
 See `docker-compose.yml` (if available) for full stack deployment.
 
-⸻
 
 ## 🚢 Deployment
 
@@ -307,7 +291,6 @@ Set start command:
 node dist/server.js
 ```
 
-⸻
 
 ## 🧩 Roadmap
 
@@ -319,7 +302,6 @@ node dist/server.js
 - 📋 Rate limiting and caching
 - 📋 GraphQL API endpoint
 
-⸻
 
 **Frontend visualization** is developed by @Kins and integrates seamlessly with this backend API.
 
