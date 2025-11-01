@@ -31,15 +31,23 @@ const corsOptions = {
       callback(null, true);
     } else {
       logger.warn(`CORS blocked request from origin: ${origin}`);
-      callback(new Error(`Not allowed by CORS. Origin: ${origin}`));
+      callback(null, false); // Return false instead of error for CORS
     }
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  exposedHeaders: ['Content-Length', 'Content-Type'],
+  maxAge: 86400, // 24 hours
+  optionsSuccessStatus: 200, // Some legacy browsers (IE11, various SmartTVs) choke on 204
 };
 
+// Apply CORS before all other middleware
 app.use(cors(corsOptions));
+
+// Explicit OPTIONS handler for preflight requests
+app.options('*', cors(corsOptions));
+
 app.use(express.json());
 
 app.use((req: Request, _res: Response, next: NextFunction) => {
