@@ -10,6 +10,7 @@ const app = express();
 const allowedOrigins = [
   'https://suivle-frontend.vercel.app',
   'https://suivle.vercel.app',
+  'https://suiflow-frontend.vercel.app', // Temporary: old frontend name during migration
 ];
 
 const corsOptions = {
@@ -48,19 +49,8 @@ const corsOptions = {
 // Apply CORS before all other middleware
 app.use(cors(corsOptions));
 
-// Handle OPTIONS preflight requests (CORS middleware handles headers, we just need to respond)
-app.options('*', (req: Request, res: Response) => {
-  res.status(200).end();
-});
-
-// JSON parser (skip for OPTIONS)
-const jsonParser = express.json();
-app.use((req: Request, res: Response, next: NextFunction) => {
-  if (req.method === 'OPTIONS') {
-    return next();
-  }
-  jsonParser(req, res, next);
-});
+// JSON parser
+app.use(express.json());
 
 app.use((req: Request, _res: Response, next: NextFunction) => {
   logger.info(`${req.method} ${req.url}`);

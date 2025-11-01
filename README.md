@@ -155,10 +155,9 @@ The server will start on `http://localhost:3000` (or `PORT` env variable).
 
 ## 📡 API Endpoints
 
-### Base URLs
+### Base URL
 
-- **Production:** `https://suivle-servers.fly.dev`
-- **Alternate:** `https://suivle-server.onrender.com`
+Replace `<BACKEND_URL>` with your backend server URL in the examples below.
 
 ### Endpoints
 
@@ -178,7 +177,7 @@ Retrieve a formatted summary of a Sui transaction by its digest (without AI expl
 
 **Request:**
 ```bash
-curl -X POST https://suivle-servers.fly.dev/digest \
+curl -X POST <BACKEND_URL>/digest \
   -H "Content-Type: application/json" \
   -d '{
     "digest": "DmH3PWELG2ts4fNVrYcGFTp524Twmvo2CrALVYzqvBaf"
@@ -194,7 +193,7 @@ Retrieve transaction summary with AI-generated explanation.
 
 **Request:**
 ```bash
-curl -X POST https://suivle-servers.fly.dev/ai-digest \
+curl -X POST <BACKEND_URL>/ai-digest \
   -H "Content-Type: application/json" \
   -d '{
     "digest": "DmH3PWELG2ts4fNVrYcGFTp524Twmvo2CrALVYzqvBaf"
@@ -212,7 +211,7 @@ Execute a SUI token transfer on the Sui testnet.
 
 **Request:**
 ```bash
-curl -X POST https://suivle-servers.fly.dev/simulate-transfer \
+curl -X POST <BACKEND_URL>/simulate-transfer \
   -H "Content-Type: application/json" \
   -d '{
     "amount": "1000000",
