@@ -12,7 +12,7 @@ yarn-error.log*
 
 # OS files
 .DS_Store
-
+./API.md
 # Build outputs
 dist/
 build/
