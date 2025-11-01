@@ -2,7 +2,7 @@ import express, { type Request, type Response, type NextFunction } from 'express
 import cors from 'cors';
 import routes from './routes';
 import { logger } from './utils/logger';
-import { errorHandler, notFound } from './middlewares/errorHandler';
+import { errorHandler, notFound, jsonErrorHandler } from './middlewares/errorHandler';
 
 const app = express();
 
@@ -48,7 +48,8 @@ app.use((req: Request, _res: Response, next: NextFunction) => {
 app.use('/', routes);
 
 app.use(notFound);
-app.use(errorHandler);
+app.use(jsonErrorHandler); // Handle JSON parsing errors
+app.use(errorHandler); // Handle other errors
 
 export default app;
 
