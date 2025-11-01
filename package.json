@@ -12,10 +12,12 @@
   "dependencies": {
     "@google/genai": "^1.28.0",
     "@mysten/sui.js": "^0.54.1",
+    "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.1.0"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.19",
     "@types/express": "^5.0.5",
     "@types/node": "^24.9.2",
     "tsx": "^4.20.6",
